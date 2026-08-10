@@ -35,10 +35,21 @@ function(_foundation_install_target module)
     set(module_name ${module})
   endif()
 
-  install(FILES $<TARGET_PROPERTY:${module},Swift_MODULE_DIRECTORY>/${module_name}.swiftdoc
+  # Under CMP0195 the module is laid down as <module>.swiftmodule/<triple>.*
+  set(_cmp0195_status "OLD")
+  if(POLICY CMP0195)
+    cmake_policy(GET CMP0195 _cmp0195_status)
+  endif()
+  if(_cmp0195_status STREQUAL "NEW")
+    set(_module_src_stem "${module_name}.swiftmodule/${CMAKE_Swift_MODULE_TRIPLE}")
+  else()
+    set(_module_src_stem "${module_name}")
+  endif()
+
+  install(FILES $<TARGET_PROPERTY:${module},Swift_MODULE_DIRECTORY>/${_module_src_stem}.swiftdoc
     DESTINATION lib/${swift}/${swift_os}/${module_name}.swiftmodule
     RENAME ${SwiftFoundation_MODULE_TRIPLE}.swiftdoc)
-  install(FILES $<TARGET_PROPERTY:${module},Swift_MODULE_DIRECTORY>/${module_name}.swiftmodule
+  install(FILES $<TARGET_PROPERTY:${module},Swift_MODULE_DIRECTORY>/${_module_src_stem}.swiftmodule
     DESTINATION lib/${swift}/${swift_os}/${module_name}.swiftmodule
     RENAME ${SwiftFoundation_MODULE_TRIPLE}.swiftmodule)
 
